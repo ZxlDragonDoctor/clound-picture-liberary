@@ -1,0 +1,47 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+
+
+spring:
+  application:
+    name: zxl-picture-backend
+    # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/zxl_picture
+    username: root
+    password: zxl123
+  profiles:
+    active: local
+    # 设置更大的文件上传体积
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+mybatis-plus:
+  configuration:
+    # MyBatis 配置
+    map-underscore-to-camel-case: false
+    # 在控制台打印日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    # 逻辑删除
+#  global-config:
+#    db-config:
+#      logic-delete-field: isdeleted # 全局逻辑删除字段名
+#      logic-delete-value: 1 # 逻辑已删除值
+#      logic-not-delete-value: 0 # 逻辑未删除值
+
+# 接口文档
+knife4j:
+  enable: true
+  openapi:
+    title: 接口文档
+    version: 1.0
+    group:
+      default:
+#        group-name: 分组名称
+        api-rule: package
+        api-rule-resources:
+          - com.zxl.zxlpicturebackend.controller
