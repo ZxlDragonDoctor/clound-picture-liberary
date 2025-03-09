@@ -4,8 +4,8 @@
       <a-col flex="200px">
         <RouterLink to="/">
           <div class="title-bar">
-            <img class="logo" src="../assets/title.png" alt="logo" />
-            <div class="title">鱼皮云图库</div>
+            <img class="logo" src="../assets/favicon-flower.png" alt="logo" />
+            <div class="title">晓龙云图库</div>
           </div>
         </RouterLink>
       </a-col>
@@ -22,6 +22,12 @@
               </ASpace>
               <template #overlay>
                 <a-menu>
+                  <a-menu-item>
+                    <router-link to="/my_space">
+                      <UserOutlined />
+                      我的空间
+                    </router-link>
+                  </a-menu-item>
                   <a-menu-item @click="doLogout">
                     <LogoutOutlined/>
                     退出登录
@@ -41,7 +47,7 @@
 </template>
 <script lang="ts" setup>
 import { computed, h, ref } from 'vue'
-import { HomeOutlined ,LogoutOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined ,LogoutOutlined,UserOutlined } from '@ant-design/icons-vue'
 
 
 const loginUserStore = useLoginUserStore()
@@ -61,7 +67,7 @@ const originItems = [
   },
   {
     key: 'others',
-    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
+    label: h('a', { href: 'https://zxldragondoctor.github.io/', target: '_blank' }, '个人博客'),
     title: '编程导航',
   },
   {
@@ -73,7 +79,12 @@ const originItems = [
     key: '/admin/pictureManage',
     label: '图片管理',
     title: '图片管理',
-  }
+  },
+  {
+    key: '/admin/spaceManage',
+    label: '空间管理',
+    title: '空间管理',
+  },
 ]
 
 // 过滤菜单项

@@ -178,7 +178,7 @@ const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.PictureQueryRequest>({
   current: 1,
-  pageSize: 10,
+  pageSize: 12,
   sortField: 'createTime',
   sortOrder: 'descend'
 })
@@ -187,6 +187,7 @@ const searchParams = reactive<API.PictureQueryRequest>({
 const fetchData = async () => {
   const res = await listPictureByPageUsingPost({
     ...searchParams,
+    nullSpaceId: true  // 不展示私有空间的图片
   })
   if (res.data.code == 0 && res.data.data) {
     dataList.value = res.data.data.records ?? []

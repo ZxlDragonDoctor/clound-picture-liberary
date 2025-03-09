@@ -1,13 +1,15 @@
 package com.zxl.zxlpicturebackend;
 
-import org.apache.ibatis.annotations.Mapper;
+
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.scheduling.annotation.EnableAsync;
+
 
 @MapperScan("com.zxl.zxlpicturebackend.mapper")
+@EnableAsync // 开启异步处理
 @SpringBootApplication
 @EnableAspectJAutoProxy(exposeProxy = true) //开启代理
 public class ZxlPictureBackendApplication {

@@ -23,6 +23,11 @@ public class Picture implements Serializable {
      * 图片 url
      */
     private String url;
+    /**
+     * 缩略图 url
+     */
+    private String thumbnailUrl;
+
 
     /**
      * 图片名称
@@ -114,6 +119,11 @@ public class Picture implements Serializable {
      * 审核时间
      */
     private Date reviewTime;
+
+    /**
+     * 空间 id（为空表示公共空间）
+     */
+    private Long spaceId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

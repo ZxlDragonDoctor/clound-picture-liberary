@@ -4,9 +4,12 @@
       <a-layout-header class="header">
         <GLobaLHeader/>
       </a-layout-header>
-      <a-layout-content class="content">
-        <router-view />
-      </a-layout-content>
+      <a-layout >
+        <GlobalSider class="sider" />
+        <a-layout-content class="content" >
+          <router-view />
+        </a-layout-content>
+      </a-layout>
       <a-layout-footer class="footer">
         <a href="https://www.codefather.cn/">
           编程导航
@@ -18,6 +21,7 @@
 
 <script setup lang="ts">
 import GLobaLHeader from '@/components/GLobaLHeader.vue'
+import GlobalSider from '@/components/GlobalSider.vue'
 </script>
 
 
@@ -41,6 +45,26 @@ import GLobaLHeader from '@/components/GLobaLHeader.vue'
   margin-bottom: 16px;
   color: unset;
   background: white;
+}
+
+
+#basicLayout .header {
+  margin-bottom: 1px;
+}
+
+#basicLayout .content {
+  padding: 28px;
+}
+
+#basicLayout .sider {
+  background: #fff;
+  padding-top: 20px;
+  border-right: 0.5px solid #eee;
+}
+
+#basicLayout :deep(.ant-menu-root) {
+  border-bottom: none !important;
+  border-inline-end: none !important;
 }
 
 </style>

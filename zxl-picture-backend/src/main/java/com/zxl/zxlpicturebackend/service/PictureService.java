@@ -2,14 +2,12 @@ package com.zxl.zxlpicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zxl.zxlpicturebackend.Model.dto.picture.PictureQueryRequest;
-import com.zxl.zxlpicturebackend.Model.dto.picture.PictureReviewRequest;
-import com.zxl.zxlpicturebackend.Model.dto.picture.PictureUploadByBatchRequest;
-import com.zxl.zxlpicturebackend.Model.dto.picture.PictureUploadRequest;
+import com.zxl.zxlpicturebackend.Model.dto.picture.*;
 import com.zxl.zxlpicturebackend.Model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zxl.zxlpicturebackend.Model.entity.User;
 import com.zxl.zxlpicturebackend.Model.vo.PictureVO;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,4 +72,25 @@ public interface PictureService extends IService<Picture> {
             User loginUser
     );
 
+    @Async
+    void clearPictureFile(Picture oldPicture);
+
+    /**
+     * 检验权限
+     * @param loginUser
+     * @param picture
+     */
+    void checkPictureAuth(User loginUser, Picture picture);
+
+    /**
+     * 删除图片
+     */
+    public void deletePicture(long PictureId,User loginUser);
+
+    /**
+     * 编辑图片
+     * @param pictureEditRequest
+     * @param loginUser
+     */
+    public void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 }

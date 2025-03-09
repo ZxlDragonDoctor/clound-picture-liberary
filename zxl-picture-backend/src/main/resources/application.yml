@@ -2,7 +2,10 @@ server:
   port: 8123
   servlet:
     context-path: /api
-
+  # cookie 设置30天过期
+    session:
+      cookie:
+        max-age: 2592000
 
 spring:
   application:
@@ -15,7 +18,18 @@ spring:
     password: zxl123
   profiles:
     active: local
-    # 设置更大的文件上传体积
+   # session 配置
+  session:
+    store-type: redis
+      # session 30天过期
+    timeout: 2592000
+  # redis 配置
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    connect-timeout: 5000
+  # 设置更大的文件上传体积
   servlet:
     multipart:
       max-file-size: 10MB

@@ -1,12 +1,15 @@
 package com.zxl.zxlpicturebackend.manager.upload;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.ciModel.persistence.CIObject;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
+import com.qcloud.cos.model.ciModel.persistence.ProcessResults;
 import com.zxl.zxlpicturebackend.Model.dto.file.UploadPictureResult;
 import com.zxl.zxlpicturebackend.config.CosClientConfig;
 import com.zxl.zxlpicturebackend.exception.BusinessException;
@@ -17,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 设计模式，模板方法
@@ -73,7 +77,18 @@ public abstract class PictureUploadTemplate {
             // 4. 上传图片到对象存储  
             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
-  
+            ProcessResults processResults = putObjectResult.getCiUploadResult().getProcessResults();
+            List<CIObject> objectList = processResults.getObjectList();
+            if (CollUtil.isNotEmpty(objectList)) {
+                CIObject compressedCiObject = objectList.get(0);
+                CIObject thnumbnailCiObject = compressedCiObject;
+                if(objectList.size()>1){
+                    thnumbnailCiObject = objectList.get(1);
+                }
+
+                // 封装压缩图返回结果
+                return buildResult(originFilename, compressedCiObject,thnumbnailCiObject);
+            }
             // 5. 封装返回结果  
             return buildResult(originFilename, file, uploadPath, imageInfo);  
         } catch (Exception e) {  
@@ -84,7 +99,24 @@ public abstract class PictureUploadTemplate {
             deleteTempFile(file);  
         }  
     }
-    /**  
+
+    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject,CIObject thumbnailCiObject) {
+        UploadPictureResult uploadPictureResult = new UploadPictureResult();
+        int picWidth = compressedCiObject.getWidth();
+        int picHeight = compressedCiObject.getHeight();
+        double picScale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
+        uploadPictureResult.setPicName(FileUtil.mainName(originFilename));
+        uploadPictureResult.setPicWidth(picWidth);
+        uploadPictureResult.setPicHeight(picHeight);
+        uploadPictureResult.setPicScale(picScale);
+        uploadPictureResult.setPicFormat(compressedCiObject.getFormat());
+        uploadPictureResult.setPicSize(compressedCiObject.getSize().longValue());
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressedCiObject.getKey());
+        uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/"+thumbnailCiObject.getKey());
+        return uploadPictureResult;
+    }
+
+    /**
      * 封装返回结果  
      */  
     private UploadPictureResult buildResult(String originFilename, File file, String uploadPath, ImageInfo imageInfo) {  
