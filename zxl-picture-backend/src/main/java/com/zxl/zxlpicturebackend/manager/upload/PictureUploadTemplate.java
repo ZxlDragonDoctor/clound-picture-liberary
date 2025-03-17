@@ -6,6 +6,11 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.model.COSObject;
+import com.qcloud.cos.model.COSObjectInputStream;
+import com.qcloud.cos.model.GetObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.model.ciModel.persistence.CIObject;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
@@ -16,9 +21,14 @@ import com.zxl.zxlpicturebackend.exception.BusinessException;
 import com.zxl.zxlpicturebackend.exception.ErrorCode;
 import com.zxl.zxlpicturebackend.manager.CosManager;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +43,8 @@ public abstract class PictureUploadTemplate {
   
     @Resource  
     protected CosClientConfig cosClientConfig;
+
+
     /**
      * 校验输入源（本地文件或 URL）
      */
@@ -79,6 +91,8 @@ public abstract class PictureUploadTemplate {
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
             ProcessResults processResults = putObjectResult.getCiUploadResult().getProcessResults();
             List<CIObject> objectList = processResults.getObjectList();
+            // TODO:再次获取图片主色调
+            String imageAve = cosManager.getImageAve(uploadPath);
             if (CollUtil.isNotEmpty(objectList)) {
                 CIObject compressedCiObject = objectList.get(0);
                 CIObject thnumbnailCiObject = compressedCiObject;
@@ -87,10 +101,10 @@ public abstract class PictureUploadTemplate {
                 }
 
                 // 封装压缩图返回结果
-                return buildResult(originFilename, compressedCiObject,thnumbnailCiObject);
+                return buildResult(originFilename, compressedCiObject,thnumbnailCiObject,imageInfo,imageAve);
             }
             // 5. 封装返回结果  
-            return buildResult(originFilename, file, uploadPath, imageInfo);  
+            return buildResult(originFilename, file, uploadPath, imageInfo,imageAve);
         } catch (Exception e) {  
             log.error("图片上传到对象存储失败", e);  
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
@@ -100,7 +114,11 @@ public abstract class PictureUploadTemplate {
         }  
     }
 
-    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject,CIObject thumbnailCiObject) {
+    /**
+     * 封装返回结果
+     */
+    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject,CIObject thumbnailCiObject,
+                                            ImageInfo imageInfo,String imageAve) {
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         int picWidth = compressedCiObject.getWidth();
         int picHeight = compressedCiObject.getHeight();
@@ -111,6 +129,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(compressedCiObject.getFormat());
         uploadPictureResult.setPicSize(compressedCiObject.getSize().longValue());
+        uploadPictureResult.setPicColor(imageAve);  // 封装主色调
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressedCiObject.getKey());
         uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/"+thumbnailCiObject.getKey());
         return uploadPictureResult;
@@ -119,7 +138,8 @@ public abstract class PictureUploadTemplate {
     /**
      * 封装返回结果  
      */  
-    private UploadPictureResult buildResult(String originFilename, File file, String uploadPath, ImageInfo imageInfo) {  
+    private UploadPictureResult buildResult(String originFilename, File file, String uploadPath,
+                                            ImageInfo imageInfo,String imageAve) {
         UploadPictureResult uploadPictureResult = new UploadPictureResult();  
         int picWidth = imageInfo.getWidth();  
         int picHeight = imageInfo.getHeight();  
@@ -129,11 +149,15 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicHeight(picHeight);  
         uploadPictureResult.setPicScale(picScale);  
         uploadPictureResult.setPicFormat(imageInfo.getFormat());  
-        uploadPictureResult.setPicSize(FileUtil.size(file));  
+        uploadPictureResult.setPicSize(FileUtil.size(file));
+        uploadPictureResult.setPicColor(imageAve);  // 封装主色调
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);  
         return uploadPictureResult;  
-    }  
-  
+    }
+
+
+
+
     /**  
      * 删除临时文件  
      */  

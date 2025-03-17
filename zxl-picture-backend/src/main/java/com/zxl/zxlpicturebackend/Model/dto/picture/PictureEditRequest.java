@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class PictureEditRequest implements Serializable {
+
   
     /**  
      * id  

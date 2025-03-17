@@ -80,7 +80,7 @@ public class UrlPictureUpload extends PictureUploadTemplate {
     protected String getOriginFilename(Object inputSource) {  
         String fileUrl = (String) inputSource;  
         // 从 URL 中提取文件名
-       // FileUtil.mainName 是一个常见的方法名，通常出现在一些文件操作工具类中，用于获取文件的主名称（即去掉扩展名的文件名
+       // FileUtil.mainName用于获取文件的主名称（即去掉扩展名的文件名)
         return FileUtil.mainName(fileUrl);
     }  
   

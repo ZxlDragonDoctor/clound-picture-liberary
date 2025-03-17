@@ -91,4 +91,8 @@ create table if not exists space
 ) comment '空间' collate = utf8mb4_unicode_ci;
 
 
+ALTER TABLE picture
+    ADD COLUMN picColor varchar(16) null comment '图片主色调';
+
+
 
