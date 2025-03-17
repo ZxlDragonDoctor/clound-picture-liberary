@@ -28,7 +28,6 @@
         <a-button type="primary" html-type="submit">搜索</a-button>
       </a-form-item>
     </a-form>
-
     <div style="margin-bottom: 20px"></div>
     <!--    表格-->
     <a-table
@@ -73,6 +72,7 @@ import { message } from 'ant-design-vue'
 import {formatSize} from '@/utils'
 import dayjs from 'dayjs'
 import { deleteSpaceUsingPost, listSpaceByPageUsingPost } from '@/api/spaceController.ts'
+import PictureSearchForm from '@/components/PictureSearchForm.vue'
 
 
 const columns = [
