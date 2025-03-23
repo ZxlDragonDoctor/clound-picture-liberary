@@ -131,6 +131,9 @@ public class Picture implements Serializable {
      */
     private String picColor;
 
+
+
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

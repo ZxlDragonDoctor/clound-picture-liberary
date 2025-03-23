@@ -17,6 +17,9 @@ import com.zxl.zxlpicturebackend.Model.entity.User;
 import com.zxl.zxlpicturebackend.Model.enums.PictureReviewStatusEnum;
 import com.zxl.zxlpicturebackend.Model.vo.PictureVO;
 import com.zxl.zxlpicturebackend.Model.vo.UserVO;
+import com.zxl.zxlpicturebackend.api.aliyunai.AliYunAiApi;
+import com.zxl.zxlpicturebackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
+import com.zxl.zxlpicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.zxl.zxlpicturebackend.config.CosClientConfig;
 import com.zxl.zxlpicturebackend.exception.BusinessException;
 import com.zxl.zxlpicturebackend.exception.ErrorCode;
@@ -75,12 +78,16 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     private SpaceService spaceService;
     @Resource
     private TransactionTemplate transactionTemplate;
+
+    @Resource
+    private AliYunAiApi aliYunAiApi;
     @Override
     public PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) {
         if(inputSource == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"图片不存在");
         }
         ThrowUtils.throwIf(loginUser==null, ErrorCode.NO_AUTH_ERROR,"用户未登录");
+        ThrowUtils.throwIf(pictureUploadRequest==null,ErrorCode.PARAMS_ERROR,"上传参数为空");
         // 校验空间是否存在
         Long spaceId = pictureUploadRequest.getSpaceId();
         if (spaceId != null) {
@@ -99,10 +106,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             }
         }
         //判断新增还是更新图片
-        Long pictureId = null;
-        if(pictureUploadRequest!=null){
-            pictureId = pictureUploadRequest.getId();
-        }
+        Long pictureId = pictureUploadRequest.getId();
 
         // todo: 如果是更新图片，需要校验图片是否存在
         if (pictureId != null) {
@@ -175,12 +179,24 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             boolean result = this.saveOrUpdate(picture);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
             if (finalSpaceId != null) {
-                boolean update = spaceService.lambdaUpdate()
-                        .eq(Space::getId, finalSpaceId)
-                        .setSql("totalSize = totalSize + " + picture.getPicSize())
-                        .setSql("totalCount = totalCount + 1")
-                        .update();
-                ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
+                boolean update = false;
+                // 更新修改原有图片的额度
+                if(pictureId!=null){
+                    Long oldPictureSize = this.getById(pictureId).getPicSize(); //取出原有图片大小
+                    update = spaceService.lambdaUpdate()
+                            .eq(Space::getId, finalSpaceId)
+                            .setSql("totalSize = totalSize - " +
+                                    oldPictureSize + " + "+ picture.getPicSize()) //减去原有图片大小，加上新图片大小
+                            .update();
+                }else{
+                    // 更新添加新增图片后的额度
+                    update = spaceService.lambdaUpdate()
+                            .eq(Space::getId, finalSpaceId)
+                            .setSql("totalSize = totalSize + " + picture.getPicSize())
+                            .setSql("totalCount = totalCount + 1")
+                            .update();
+                    ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
+                }
             }
             return picture;
         });
@@ -608,6 +624,31 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "名称解析错误");
         }
     }
+
+    /**
+     * 创建扩图任务
+     * @param createPictureOutPaintingTaskRequest
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) {
+        // 获取图片信息
+        Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
+        Picture picture = Optional.ofNullable(this.getById(pictureId))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR));
+        // 权限校验
+        checkPictureAuth(loginUser, picture);
+        // 构造请求参数
+        CreateOutPaintingTaskRequest taskRequest = new CreateOutPaintingTaskRequest();
+        CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
+        input.setImageUrl(picture.getUrl());
+        taskRequest.setInput(input);
+        BeanUtil.copyProperties(createPictureOutPaintingTaskRequest, taskRequest);
+        // 创建任务
+        return aliYunAiApi.createOutPaintingTask(taskRequest);
+    }
+
 
 }
 

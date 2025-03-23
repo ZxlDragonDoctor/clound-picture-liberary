@@ -7,6 +7,7 @@ import com.zxl.zxlpicturebackend.Model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zxl.zxlpicturebackend.Model.entity.User;
 import com.zxl.zxlpicturebackend.Model.vo.PictureVO;
+import com.zxl.zxlpicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -100,4 +101,6 @@ public interface PictureService extends IService<Picture> {
 
     @Transactional(rollbackFor = Exception.class)
     void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
+
+    CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
 }

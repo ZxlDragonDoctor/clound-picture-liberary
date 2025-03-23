@@ -36,7 +36,7 @@ public class AuthInterceptor {
         if(mustRoleEnum==null){
             return joinPoint.proceed();
         }
-        //当前用户没有权限抛出异常
+        //当前用户没有,权限抛出异常
         UserRoleEnum userRoleEnum = UserRoleEnum.getEnumByValue(loginUser.getUserRole());
         if(userRoleEnum==null){
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
