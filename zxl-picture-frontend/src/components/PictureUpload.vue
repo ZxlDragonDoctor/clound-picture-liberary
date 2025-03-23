@@ -21,6 +21,7 @@ import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
+import ImageCropper from '@/components/ImageCropper.vue'
 
 const loading = ref<boolean>(false);
 
