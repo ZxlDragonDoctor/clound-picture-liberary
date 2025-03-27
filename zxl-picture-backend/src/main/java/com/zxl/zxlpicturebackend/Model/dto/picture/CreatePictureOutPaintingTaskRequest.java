@@ -14,7 +14,7 @@ public class CreatePictureOutPaintingTaskRequest implements Serializable {
     private Long pictureId;
 
     /**
-     * 扩图参数
+     * 扩图参数d
      */
     private CreateOutPaintingTaskRequest.Parameters parameters;
 

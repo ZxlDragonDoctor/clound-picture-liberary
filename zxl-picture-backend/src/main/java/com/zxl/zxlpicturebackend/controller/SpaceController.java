@@ -9,6 +9,7 @@ import com.zxl.zxlpicturebackend.Model.dto.picture.PictureUploadRequest;
 import com.zxl.zxlpicturebackend.Model.dto.space.*;
 import com.zxl.zxlpicturebackend.Model.entity.Picture;
 import com.zxl.zxlpicturebackend.Model.entity.Space;
+import com.zxl.zxlpicturebackend.Model.entity.SpaceUser;
 import com.zxl.zxlpicturebackend.Model.entity.User;
 import com.zxl.zxlpicturebackend.Model.enums.PictureReviewStatusEnum;
 import com.zxl.zxlpicturebackend.Model.enums.SpaceLevelEnum;
@@ -21,7 +22,10 @@ import com.zxl.zxlpicturebackend.common.ResultUtils;
 import com.zxl.zxlpicturebackend.exception.BusinessException;
 import com.zxl.zxlpicturebackend.exception.ErrorCode;
 import com.zxl.zxlpicturebackend.exception.ThrowUtils;
+import com.zxl.zxlpicturebackend.manager.auth.SpaceUserAuthManager;
+import com.zxl.zxlpicturebackend.manager.auth.annotion.SaSpaceCheckPermission;
 import com.zxl.zxlpicturebackend.service.SpaceService;
+import com.zxl.zxlpicturebackend.service.SpaceUserService;
 import com.zxl.zxlpicturebackend.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +40,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("space")
 public class SpaceController {
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
     @Resource
     private SpaceService spaceService;
     @Resource
@@ -150,8 +156,12 @@ public class SpaceController {
         // 查询数据库
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
+        SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
+        User loginUser = userService.getLoginUser(request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        spaceVO.setPermissionList(permissionList);
         // 获取封装类
-        return ResultUtils.success(spaceService.getSpaceVO(space, request));
+        return ResultUtils.success(spaceVO);
     }
     /**
      * 删除空间

@@ -10,12 +10,40 @@ server:
 spring:
   application:
     name: zxl-picture-backend
-    # 数据库配置
+  # 空间图片分表
+  shardingsphere:
+    datasource:
+      names: zxl_picture
+      zxl_picture:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/zxl_picture
+        username: root
+        password: zxl123
+    rules:
+      sharding:
+        tables:
+          picture:
+            actual-data-nodes: zxl_picture.picture  # 动态分表
+            table-strategy:
+              standard:
+                sharding-column: spaceId
+                sharding-algorithm-name: picture_sharding_algorithm  # 使用自定义分片算法
+        sharding-algorithms:
+          picture_sharding_algorithm:
+            type: CLASS_BASED
+            props:
+              strategy: standard
+              algorithmClassName: com.zxl.zxlpicturebackend.manager.sharding.PictureShardingAlgorithm
+    props:
+      sql-show: true
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/zxl_picture
     username: root
     password: zxl123
+
   profiles:
     active: local
    # session 配置
@@ -40,6 +68,8 @@ mybatis-plus:
     map-underscore-to-camel-case: false
     # 在控制台打印日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    enable-sql-runner: true
 #    # 逻辑删除
 #  global-config:
 #    db-config:

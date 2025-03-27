@@ -26,7 +26,7 @@ public interface SpaceService extends IService<Space> {
 
 
     /**
-     * 创建空间
+     * 创建空间(私人空间或者团队空间)
      *
      * @param spaceAddRequest
      * @param longinUser

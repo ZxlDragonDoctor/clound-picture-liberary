@@ -79,7 +79,7 @@ public interface PictureService extends IService<Picture> {
     void clearPictureFile(Picture oldPicture);
 
     /**
-     * 检验权限
+     * 检验权限，改为saToken校验
      * @param loginUser
      * @param picture
      */

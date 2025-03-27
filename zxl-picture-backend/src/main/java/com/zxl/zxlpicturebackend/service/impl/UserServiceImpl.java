@@ -16,12 +16,14 @@ import com.zxl.zxlpicturebackend.Model.vo.UserVO;
 import com.zxl.zxlpicturebackend.exception.BusinessException;
 import com.zxl.zxlpicturebackend.exception.ErrorCode;
 import com.zxl.zxlpicturebackend.exception.ThrowUtils;
+import com.zxl.zxlpicturebackend.manager.auth.StpKit;
 import com.zxl.zxlpicturebackend.service.UserService;
 import com.zxl.zxlpicturebackend.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +112,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if(user==null){
             throw  new BusinessException(ErrorCode.PARAMS_ERROR,"用户名不存在或者密码错误");
         }
+        // 记录用户的登录状态
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE,user);
+        // 记录用户登录态到 Sa-token，便于空间鉴权时使用，注意保证该用户信息与 SpringSession 中的信息过期时间一致
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE,user);
         return this.getLoginUserVo(user);
     }
 
@@ -125,6 +131,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw  new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "用户未登录");
         }
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE,newUser);
+
         return newUser;
     }
 

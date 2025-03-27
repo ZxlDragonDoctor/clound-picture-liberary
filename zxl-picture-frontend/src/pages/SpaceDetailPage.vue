@@ -2,12 +2,25 @@
   <div class="spaceDetailPage">
     <!-- 空间信息 -->
     <a-flex justify="space-between">
-      <h2>{{ space.spaceName }}（私有空间）</h2>
+      <h2>{{ space.spaceName }}（{{ SPACE_TYPE_MAP[space.spaceType] }}）</h2>
       <a-space size="middle">
-        <a-button type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">
+        <a-button
+          v-if="canUploadPicture"
+          type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">
           + 创建图片
         </a-button>
         <a-button
+          v-if="canManageSpaceUser"
+          type="primary"
+          ghost
+          :icon="h(TeamOutlined)"
+          :href="`/spaceUserManage/${id}`"
+          target="_blank"
+        >
+          成员管理
+        </a-button>
+        <a-button
+          v-if="canManageSpaceUser"
           type="primary"
           ghost
           :icon="h(BarChartOutlined)"
@@ -38,7 +51,10 @@
 
     <div style="margin-top: 16px"></div>
     <!-- 图片列表 -->
-    <PictureList :dataList="dataList" :loading="loading" :show-op="true" :on-reload="fetchData"/>
+    <PictureList
+      :canEdit="canEditPicture"
+      :canDelete="canDeletePicture"
+      :dataList="dataList" :loading="loading" :show-op="true" :on-reload="fetchData"/>
     <a-pagination
       style="text-align: right"
       v-model:current="searchParams.current"
@@ -59,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, h } from 'vue'
+import { ref, reactive, onMounted, h, watch, computed } from 'vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { listPictureVoByPageUsingPost, searchPictureByColorUsingPost } from '@/api/pictureController.ts'
 import {formatSize} from '@/utils'
@@ -69,8 +85,8 @@ import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { ColorPicker } from "vue3-colorpicker";
 import "vue3-colorpicker/style.css";
 import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
-import { EditOutlined,BarChartOutlined } from '@ant-design/icons-vue'
-
+import { EditOutlined,BarChartOutlined,TeamOutlined } from '@ant-design/icons-vue'
+import { SPACE_TYPE_MAP ,SPACE_PERMISSION_ENUM}   from '@/constants/space.ts'
 const props = defineProps<{
   id: string | number
 }>()
@@ -179,6 +195,31 @@ const doBatchEdit = () => {
     batchEditPictureModalRef.value.openModal()
   }
 }
+
+/**
+ * 切换空间时，重新获取空间信息和图片列表
+ */
+watch(
+  () => props.id,
+  (newSpaceId) => {
+    fetchSpaceDetail()
+    fetchData()
+  },
+)
+
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (space.value.permissionList ?? []).includes(permission)
+  })
+}
+
+// 定义权限检查
+const canManageSpaceUser = createPermissionChecker(SPACE_PERMISSION_ENUM.SPACE_USER_MANAGE)
+const canUploadPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_UPLOAD)
+const canEditPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
+
 
 </script>
 

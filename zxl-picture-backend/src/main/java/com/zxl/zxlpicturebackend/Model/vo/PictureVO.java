@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -80,8 +81,13 @@ public class PictureVO implements Serializable {
     /**  
      * 用户 id  
      */  
-    private Long userId;  
-  
+    private Long userId;
+    /**
+     * 权限列表
+     */
+    private List<String> permissionList = new ArrayList<>();
+
+
     /**  
      * 创建时间  
      */  
