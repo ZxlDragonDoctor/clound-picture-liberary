@@ -68,7 +68,7 @@
             <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit">
               编辑
             </a-button>
-            <a-button v-if="canEdit" :icon="h(DeleteOutlined)" danger @click="doDelete">
+            <a-button v-if="canDelete" :icon="h(DeleteOutlined)" danger @click="doDelete">
               删除
             </a-button>
             <a-button type="primary" @click="doDownload">
@@ -101,6 +101,7 @@ import { computed, h, onMounted, ref } from 'vue'
 import { downloadImage, formatSize, toHexColor } from '@/utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
+import { SPACE_PERMISSION_ENUM}   from '@/constants/space.ts'
 import ShareModel from '@/components/ShareModel.vue'
 
 const props = defineProps<{
@@ -109,17 +110,17 @@ const props = defineProps<{
 const picture = ref<API.PictureVO>({})
 
 const loginUserStore = useLoginUserStore()
-// 是否具有编辑权限
-const canEdit = computed(() => {
-  const loginUser = loginUserStore.loginUser;
-  // 未登录不可编辑
-  if (!loginUser.id) {
-    return false
-  }
-  // 仅本人或管理员可编辑
-  const user = picture.value.user || {}
-  return loginUser.id === user.id || loginUser.userRole === 'admin'
-})
+// 是否具有编辑权限，改为后端shardingfphere校验
+// const canEdit = computed(() => {
+//   const loginUser = loginUserStore.loginUser;
+//   // 未登录不可编辑
+//   if (!loginUser.id) {
+//     return false
+//   }
+//   // 仅本人或管理员可编辑
+//   const user = picture.value.user || {}
+//   return loginUser.id === user.id || loginUser.userRole === 'admin'
+// })
 
 // 编辑
 const doEdit = () => {
@@ -183,6 +184,18 @@ const doShare = () => {
     shareModalRef.value.openModal()
   }
 }
+
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+
+// 定义权限检查
+const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
+
 </script>
 
 <style scoped>

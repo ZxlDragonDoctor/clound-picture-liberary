@@ -7,6 +7,7 @@ import * as fileController from './fileController'
 import * as mainController from './mainController'
 import * as spaceController from './spaceController'
 import * as spaceAnalyzeController from './spaceAnalyzeController'
+import * as spaceUserController from './spaceUserController'
 import * as userController from './userController'
 export default {
   pictureController,
@@ -14,5 +15,6 @@ export default {
   mainController,
   spaceController,
   spaceAnalyzeController,
+  spaceUserController,
   userController,
 }
