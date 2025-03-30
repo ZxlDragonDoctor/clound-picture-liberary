@@ -10,7 +10,7 @@
           + 创建图片
         </a-button>
         <a-button
-          v-if="canManageSpaceUser"
+          v-if="space.spaceType==SPACE_TYPE_ENUM.TEAM"
           type="primary"
           ghost
           :icon="h(TeamOutlined)"
@@ -86,7 +86,7 @@ import { ColorPicker } from "vue3-colorpicker";
 import "vue3-colorpicker/style.css";
 import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
 import { EditOutlined,BarChartOutlined,TeamOutlined } from '@ant-design/icons-vue'
-import { SPACE_TYPE_MAP ,SPACE_PERMISSION_ENUM}   from '@/constants/space.ts'
+import { SPACE_TYPE_MAP, SPACE_PERMISSION_ENUM, SPACE_TYPE_ENUM } from '@/constants/space.ts'
 const props = defineProps<{
   id: string | number
 }>()

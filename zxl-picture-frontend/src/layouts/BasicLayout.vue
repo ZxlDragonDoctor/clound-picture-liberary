@@ -10,11 +10,6 @@
           <router-view />
         </a-layout-content>
       </a-layout>
-      <a-layout-footer class="footer">
-        <a href="https://www.codefather.cn/">
-          编程导航
-        </a>
-      </a-layout-footer>
     </a-layout>
   </div>
 </template>
@@ -58,7 +53,6 @@ import GlobalSider from '@/components/GlobalSider.vue'
 
 #basicLayout .sider {
   background: #fff;
-  padding-top: 20px;
   border-right: 0.5px solid #eee;
 }
 
